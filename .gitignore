@@ -1,0 +1,35 @@
+# Environment & secrets — NEVER commit these
+.env
+*.env
+.env.*
+
+# Credential files
+cdp_api_key.json
+wallet_secret.txt
+broker_identity.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Supabase local state
+supabase/.temp/
+
+# Node
+node_modules/
+package-lock.json
+
+# Claude Code internals
+.claude/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
