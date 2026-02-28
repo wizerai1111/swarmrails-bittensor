@@ -1,0 +1,202 @@
+# Swarmrails — Cross-Subnet Composability Broker
+
+**The API Gateway of Gateways for the Agent-to-Agent (A2A) economy.**
+
+One endpoint. One payment. Access to the full Bittensor intelligence network.
+
+---
+
+## Gateway Endpoint
+
+```
+https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate
+```
+
+---
+
+## Payment Protocol
+
+Swarmrails uses the **x402 protocol** with **USDC on Base blockchain**.
+
+Every POST request requires an `Authorization` header containing a fresh,
+unspent USDC transaction hash. Each hash is single-use (10-minute replay window).
+
+**Header format:**
+```
+Authorization: x402 <any_string>:0xTRANSACTION_HASH
+```
+
+**How to pay:**
+1. Send USDC on Base to: `0x14a129b3e3Bd154c974118299d75F14626A6157B`
+2. Find your transaction hash on [Basescan](https://basescan.org/token/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913)
+3. Include it in the Authorization header
+4. One hash = one API call
+
+---
+
+## Available Subnets
+
+| netuid | Name | Capability | Price (USDC) | Response |
+|--------|------|-----------|-------------|---------|
+| 1 | Text Prompting | Conversational AI (Llama 3.3 70B) | $0.005 | Sync |
+| 3 | Machine Translation | Multilingual translation | $0.005 | Sync |
+| 4 | Targon | Reasoning (DeepSeek-R1) | $0.05 | Sync |
+| 5 | Image Generation | Text-to-image (SDXL) | $0.075 | Sync |
+| 6 | Nous Research | Fine-tuned LLM inference | $0.01 | Sync |
+| 8 | Time Series Prediction | Financial & crypto forecasting | $0.05 | Sync |
+| 11 | Code Generation | Advanced code generation | $0.01 | Sync |
+| 13 | Data Universe | Data analysis & synthesis | $0.005 | Sync |
+| 16 | Voice Cloning / TTS | Text-to-speech (returns mp3 base64) | $0.025 | Sync |
+| 18 | Video Generation | Text-to-video MP4 (Hunyuan) | $2.00 | Async |
+| 21 | Web Scraping | URL content extraction (Jina) | $0.01 | Sync |
+| 24 | Omega Multimodal | Image + text reasoning (Gemini) | $0.02 | Sync |
+| 29 | 3D Asset Generation | Image-to-3D mesh GLB (Trellis) | $0.75 | Async |
+
+---
+
+## Request Format
+
+### POST — Submit a job
+
+```json
+{
+  "prompt": "Your input text",
+  "netuid": 1,
+  "agent_id": "your_agent_id",
+  "image_url": "https://..."
+}
+```
+
+- `prompt` — required for all subnets
+- `netuid` — required; selects the subnet
+- `agent_id` — optional; for tracking
+- `image_url` — required for netuid 29 (Trellis); pass the source image URL
+
+### GET — Poll async job status
+
+```
+GET /payment_gate?job_id=<job_id>
+```
+
+---
+
+## Examples
+
+### Text generation (netuid 1, $0.005)
+
+```bash
+curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: x402 agent:0xYOUR_TX_HASH" \
+  -d '{"prompt": "Explain Bittensor in one paragraph", "netuid": 1}'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {
+    "choices": [{"message": {"content": "Bittensor is..."}}]
+  }
+}
+```
+
+---
+
+### Image generation (netuid 5, $0.075)
+
+```bash
+curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: x402 agent:0xYOUR_TX_HASH" \
+  -d '{"prompt": "A futuristic city at sunset", "netuid": 5}'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {"image_url": "https://...", "model": "stabilityai/stable-diffusion-xl-base-1.0"}
+}
+```
+
+---
+
+### Video generation (netuid 18, $2.00) — async
+
+```bash
+# Step 1: Submit
+curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: x402 agent:0xYOUR_TX_HASH" \
+  -d '{"prompt": "A drone flying over a forest", "netuid": 18}'
+# → {"job_id": "abc-123", "status": "pending"}
+
+# Step 2: Poll (every 10s, completes in ~2-5 min)
+curl "https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate?job_id=abc-123"
+# → {"status": "completed", "video_url": "https://...mp4"}
+```
+
+---
+
+### 3D Asset generation (netuid 29, $0.75) — async, requires image input
+
+```bash
+# Step 1: Submit with source image
+curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: x402 agent:0xYOUR_TX_HASH" \
+  -d '{"prompt": "3D asset", "netuid": 29, "image_url": "https://your-image.jpg"}'
+# → {"job_id": "xyz-456", "status": "pending"}
+
+# Step 2: Poll (completes in ~30-90s)
+curl "https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate?job_id=xyz-456"
+# → {"status": "completed", "video_url": "https://...model.glb"}
+```
+
+---
+
+### Voice TTS (netuid 16, $0.025)
+
+```bash
+curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: x402 agent:0xYOUR_TX_HASH" \
+  -d '{"prompt": "Welcome to Swarmrails", "netuid": 16}'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {"audio_base64": "<mp3 base64>", "format": "mp3", "voice": "alloy"}
+}
+```
+
+---
+
+## Error Responses
+
+| Status | Error | Meaning |
+|--------|-------|---------|
+| 402 | `Payment Required` | Missing x402 Authorization header |
+| 402 | `Payment Already Used` | Transaction hash already spent |
+| 402 | `Transaction not found on Base` | Hash not yet confirmed on-chain |
+| 402 | `Insufficient payment` | USDC amount below subnet price |
+| 402 | `Payment did not reach the Swarmrails wallet` | Wrong recipient address |
+| 404 | `Subnet N not configured or inactive` | netuid not available |
+| 503 | `Subnet N uses metered pricing` | Metered subnet — not yet supported |
+
+---
+
+## USDC Contract (Base)
+
+```
+0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
+```
+
+## Recipient Wallet (Base)
+
+```
+0x14a129b3e3Bd154c974118299d75F14626A6157B
+```
