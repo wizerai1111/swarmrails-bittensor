@@ -61,6 +61,18 @@ function toBase64(buffer: ArrayBuffer): string {
   return btoa(binary)
 }
 
+// ── Telegram ops alert (fire-and-forget) ─────────────────────────────────────
+function sendTelegramAlert(message: string): void {
+  const token  = Deno.env.get('OPS_TELEGRAM_TOKEN')
+  const chatId = Deno.env.get('OPS_TELEGRAM_CHAT_ID')
+  if (!token || !chatId) return
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text: message })
+  }).catch(() => {})
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 serve(async (req) => {
   const url = new URL(req.url)
@@ -147,8 +159,10 @@ serve(async (req) => {
 
   // ── POST: Main gateway ──────────────────────────────────────────────────────
   if (req.method === 'POST') {
+    let netuid: number | undefined
     try {
-      const { prompt, netuid, agent_id, image_url } = JSON.parse(await req.text())
+      const { prompt, netuid: _netuid, agent_id, image_url } = JSON.parse(await req.text())
+      netuid = _netuid
       console.log(`Request: netuid=${netuid} agent=${agent_id}`)
 
       if (!prompt || netuid === undefined || netuid === null) {
@@ -477,6 +491,12 @@ serve(async (req) => {
 
     } catch (err: any) {
       console.error('Gateway error:', err.message)
+      sendTelegramAlert(
+        `🚨 Swarmrails Gateway Error\n` +
+        `netuid: ${netuid ?? '?'}\n` +
+        `error: ${err.message}\n` +
+        `time: ${new Date().toISOString()}`
+      )
       return new Response(JSON.stringify({ error: err.message }), {
         status: 500, headers: { 'Content-Type': 'application/json' }
       })
