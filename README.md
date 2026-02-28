@@ -175,6 +175,20 @@ curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate 
 
 ---
 
+## Test Mode (internal use only)
+
+For development and debugging without spending real USDC. Requires the
+`GATEWAY_TEST_KEY` secret to be set in the Supabase project.
+
+```
+Authorization: x402 test_mode:<GATEWAY_TEST_KEY>
+```
+
+> **Warning:** Never share the test key publicly. It bypasses all blockchain
+> verification and replay protection. Remove or rotate before going to production.
+
+---
+
 ## Error Responses
 
 | Status | Error | Meaning |
@@ -200,3 +214,5 @@ curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate 
 ```
 0x14a129b3e3Bd154c974118299d75F14626A6157B
 ```
+
+![Recipient Wallet QR](https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=0x14a129b3e3Bd154c974118299d75F14626A6157B)
