@@ -20,9 +20,18 @@ serve(async (req) => {
     const payload = await req.json()
     console.log("Fal Webhook Payload:", JSON.stringify(payload))
 
-    // Handle different Fal.ai payload structures for video URLs
-    const videoUrl = payload.payload?.video?.url || payload.video?.url
-    const requestId = payload.request_id 
+    // Extract result URL from all known Fal.ai payload structures:
+    // video (Hunyuan), 3D mesh (Trellis), images (SDXL), audio
+    const p = payload.payload ?? payload
+    const mediaUrl =
+      p.video?.url ||
+      p.model_mesh?.url ||
+      p.images?.[0]?.url ||
+      p.image?.url ||
+      p.audio?.url ||
+      p.output?.video?.url ||
+      p.output?.model_mesh?.url
+    const requestId = payload.request_id
 
     if (!requestId) {
       return new Response(JSON.stringify({ error: "Missing request_id" }), { status: 400 })
@@ -36,9 +45,9 @@ serve(async (req) => {
     // 2. Guarded Update
     const { data, error } = await supabaseAdmin
       .from('gateway_jobs')
-      .update({ 
-        video_url: videoUrl, 
-        status: videoUrl ? 'completed' : 'failed' 
+      .update({
+        video_url: mediaUrl,
+        status: mediaUrl ? 'completed' : 'failed'
       })
       .eq('fal_request_id', requestId)
       .select()
