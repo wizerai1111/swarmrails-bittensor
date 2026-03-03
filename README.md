@@ -216,3 +216,68 @@ Authorization: x402 test_mode:<GATEWAY_TEST_KEY>
 ```
 
 ![Recipient Wallet QR](https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=0x14a129b3e3Bd154c974118299d75F14626A6157B)
+
+---
+
+## Operator: USDC Sweep Scripts
+
+Automated scripts for sweeping USDC (and ETH) out of the gateway's Coinbase CDP
+server accounts. All credentials are loaded from `.env` — never hardcoded.
+Copy `.env.example` to `.env` and fill in your values before running.
+
+### Prerequisites
+
+```bash
+npm install          # installs @coinbase/cdp-sdk, viem, dotenv
+```
+
+Required `.env` keys:
+
+| Key | Description |
+|-----|-------------|
+| `CDP_API_KEY_ID` | Full API key ID from the CDP portal |
+| `CDP_API_KEY_SECRET` | PKCS8 EC private key (PEM, `\n`-escaped single line) |
+| `CDP_WALLET_SECRET` | Wallet signing key from the CDP portal (~184-char base64) |
+| `RETAIL_ADDRESS` | Destination address for outbound sweeps |
+
+> The CDP API key private key must be in **PKCS8** format (`-----BEGIN PRIVATE KEY-----`).
+> If your portal exports it in SEC1 format (`-----BEGIN EC PRIVATE KEY-----`),
+> convert it first — see the project history for the `convert_key.js` one-off script.
+
+### Scripts
+
+#### `sweep_funds.js` — sweep Swarmrailsv2 USDC → RETAIL_ADDRESS
+
+Sweeps the full USDC balance from the `Swarmrailsv2` gateway account to your
+retail/custodial address. Skips if balance ≤ $1.00. Requires the account to
+hold a small ETH balance for gas.
+
+```bash
+node sweep_funds.js
+```
+
+#### `sweep_burner.js` — sweep SwarmrailBurner USDC → RETAIL_ADDRESS
+
+Same as above but targets the `SwarmrailBurner` account.
+
+```bash
+node sweep_burner.js
+```
+
+#### `sweep_burner_to_v2.js` — drain SwarmrailBurner → Swarmrailsv2
+
+Internal consolidation script. Sweeps **USDC first** (while ETH is still
+available for gas), then sweeps the remaining **ETH** leaving a fixed 0.0001 ETH
+gas reserve. Useful after the burner has accumulated funds.
+
+```bash
+node sweep_burner_to_v2.js
+```
+
+### Notes
+
+- All scripts print the Basescan TX link and wait for on-chain confirmation.
+- ETH is required in the source account to pay Base network gas (~0.00001–0.0001 ETH per transfer).
+- The CDP API validates balances against a higher internal gas price floor than
+  live `estimateFeesPerGas()` returns; `sweep_burner_to_v2.js` uses a fixed
+  0.0001 ETH reserve to avoid spurious "Insufficient balance" rejections.

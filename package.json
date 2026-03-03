@@ -1,6 +1,8 @@
 {
+  "type": "module",
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.44.1",
+    "@coinbase/coinbase-sdk": "^0.10.0",
     "dotenv": "^17.3.1",
     "viem": "^2.46.3"
   }
