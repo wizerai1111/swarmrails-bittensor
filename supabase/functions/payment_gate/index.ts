@@ -29,6 +29,10 @@ function providerAuth(provider: string): string {
     case 'fal_queue':
     case 'fal_sync':   return `Key ${Deno.env.get('FAL_KEY') ?? ''}`
     case 'datura':     return Deno.env.get('DATURA_API_KEY') ?? ''
+    case 'jina': {
+      const jinaKey = Deno.env.get('JINA_API_KEY')
+      return jinaKey ? `Bearer ${jinaKey}` : ''
+    }
     default:           return ''
   }
 }
@@ -349,8 +353,11 @@ serve(async (req) => {
         const ctl = new AbortController()
         const timer = setTimeout(() => ctl.abort(), 30000)
         try {
+          const jinaHeaders: Record<string, string> = { 'Accept': 'text/plain' }
+          const jinaAuth = providerAuth('jina')
+          if (jinaAuth) jinaHeaders['Authorization'] = jinaAuth
           const jinaRes = await fetch(`https://r.jina.ai/${encodeURIComponent(prompt)}`, {
-            headers: { 'Accept': 'text/plain' },
+            headers: jinaHeaders,
             signal: ctl.signal
           })
           clearTimeout(timer)
@@ -367,6 +374,11 @@ serve(async (req) => {
 
       // ── OpenAI TTS (returns base64 audio) ─────────────────────────────────
       if (provider === 'openai' && endpointUrl.includes('audio/speech')) {
+        if (prompt.length > 1500) {
+          return new Response(JSON.stringify({
+            error: 'Prompt too long for TTS — maximum 1500 characters'
+          }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+        }
         const ctl = new AbortController()
         const timer = setTimeout(() => ctl.abort(), 30000)
         try {
