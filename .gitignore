@@ -26,6 +26,8 @@ package-lock.json
 
 # Claude Code internals
 .claude/
+CLAUDE.md
+claude.md
 
 # IDE
 .vscode/
