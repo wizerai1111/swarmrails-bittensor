@@ -55,10 +55,10 @@ def check_wallet_balances(query: str = "") -> str:
 def main():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        print("ERROR: OPENAI_API_KEY not found in .env file.")
+        print("ERROR: AI key not found in .env file.")
         return
-        
-    print(f"System: OpenAI Key detected (Starts with {api_key[:8]}...)")
+
+    print(f"System: AI key detected (Starts with {api_key[:8]}...)")
     print("System: Waking up the Swarmrails Broker Agent...")
     
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)

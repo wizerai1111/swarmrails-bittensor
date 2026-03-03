@@ -20,18 +20,34 @@ function detectProvider(url: string): string {
   return 'unknown'
 }
 
-// ── Auth header per provider ──────────────────────────────────────────────────
+// ── Secret lookup with legacy-name fallback ───────────────────────────────────
+// Primary names use internal BITTENSOR_* convention.
+// Legacy entries kept for zero-downtime migration — remove once Supabase
+// secrets are renamed to the BITTENSOR_* equivalents.
+const _LEGACY: Record<string, string> = {
+  BITTENSOR_INFERENCE_KEY: 'OPENROUTER_API_KEY',
+  BITTENSOR_IMAGE_KEY:     'TOGETHER_API_KEY',
+  BITTENSOR_TTS_KEY:       'OPENAI_API_KEY',
+  BITTENSOR_MEDIA_KEY:     'FAL_KEY',
+  BITTENSOR_SEARCH_KEY:    'DATURA_API_KEY',
+  BITTENSOR_WEB_KEY:       'JINA_API_KEY',
+}
+function secret(key: string): string {
+  return Deno.env.get(key) ?? Deno.env.get(_LEGACY[key] ?? '') ?? ''
+}
+
+// ── Auth header per routing layer ─────────────────────────────────────────────
 function providerAuth(provider: string): string {
   switch (provider) {
-    case 'openrouter': return `Bearer ${Deno.env.get('OPENROUTER_API_KEY') ?? ''}`
-    case 'together':   return `Bearer ${Deno.env.get('TOGETHER_API_KEY') ?? ''}`
-    case 'openai':     return `Bearer ${Deno.env.get('OPENAI_API_KEY') ?? ''}`
+    case 'openrouter': return `Bearer ${secret('BITTENSOR_INFERENCE_KEY')}`
+    case 'together':   return `Bearer ${secret('BITTENSOR_IMAGE_KEY')}`
+    case 'openai':     return `Bearer ${secret('BITTENSOR_TTS_KEY')}`
     case 'fal_queue':
-    case 'fal_sync':   return `Key ${Deno.env.get('FAL_KEY') ?? ''}`
-    case 'datura':     return Deno.env.get('DATURA_API_KEY') ?? ''
+    case 'fal_sync':   return `Key ${secret('BITTENSOR_MEDIA_KEY')}`
+    case 'datura':     return secret('BITTENSOR_SEARCH_KEY')
     case 'jina': {
-      const jinaKey = Deno.env.get('JINA_API_KEY')
-      return jinaKey ? `Bearer ${jinaKey}` : ''
+      const k = secret('BITTENSOR_WEB_KEY')
+      return k ? `Bearer ${k}` : ''
     }
     default:           return ''
   }

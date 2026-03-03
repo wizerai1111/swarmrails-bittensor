@@ -20,8 +20,8 @@ serve(async (req) => {
     const payload = await req.json()
     console.log("Fal Webhook Payload:", JSON.stringify(payload))
 
-    // Extract result URL from all known Fal.ai payload structures:
-    // video (Hunyuan), 3D mesh (Trellis), images (SDXL), audio
+    // Extract result URL from async media generation payloads
+    // (supports video, 3D mesh, image, and audio response formats)
     const p = payload.payload ?? payload
     const mediaUrl =
       p.video?.url ||

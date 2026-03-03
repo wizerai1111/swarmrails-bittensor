@@ -82,7 +82,7 @@ async function main() {
 
   // ── Step 1: Text generation (netuid 1, $0.005) ────────────────────────────
   step(1, "Text generation — netuid 1  ($0.005 USDC)");
-  info("Subnet", "Bittensor Text Prompting → OpenRouter → Llama 3.3 70B");
+  info("Subnet", "Bittensor Text Prompting → Inference layer");
   info("Prompt", '"Explain what Bittensor is in two sentences."');
   process.stdout.write(`\n  ${C.dim}Calling gateway...${C.reset} `);
 
@@ -104,7 +104,7 @@ async function main() {
 
   // ── Step 2: Web scraping (netuid 21, $0.01) ───────────────────────────────
   step(2, "Web scraping — netuid 21  ($0.010 USDC)");
-  info("Subnet", "Bittensor Web Scraping → Jina AI Reader");
+  info("Subnet", "Bittensor Web Scraping → Web intelligence layer");
   info("Target", "https://bittensor.com");
   process.stdout.write(`\n  ${C.dim}Calling gateway...${C.reset} `);
 
@@ -125,7 +125,7 @@ async function main() {
 
   // ── Step 3: Code generation (netuid 11, $0.01) ────────────────────────────
   step(3, "Code generation — netuid 11  ($0.010 USDC)");
-  info("Subnet", "Bittensor Code → OpenRouter → Code LLM");
+  info("Subnet", "Bittensor Code → Inference layer");
   info("Prompt", '"Write a Python one-liner that prints the Fibonacci sequence to 100."');
   process.stdout.write(`\n  ${C.dim}Calling gateway...${C.reset} `);
 

@@ -38,19 +38,19 @@ Authorization: x402 <any_string>:0xTRANSACTION_HASH
 
 | netuid | Name | Capability | Price (USDC) | Response |
 |--------|------|-----------|-------------|---------|
-| 1 | Text Prompting | Conversational AI (Llama 3.3 70B) | $0.005 | Sync |
+| 1 | Text Prompting | Conversational AI | $0.005 | Sync |
 | 3 | Machine Translation | Multilingual translation | $0.005 | Sync |
-| 4 | Targon | Reasoning (DeepSeek-R1) | $0.05 | Sync |
-| 5 | Image Generation | Text-to-image (SDXL) | $0.075 | Sync |
+| 4 | Targon | Advanced reasoning | $0.05 | Sync |
+| 5 | Image Generation | Text-to-image synthesis | $0.075 | Sync |
 | 6 | Nous Research | Fine-tuned LLM inference | $0.01 | Sync |
 | 8 | Time Series Prediction | Financial & crypto forecasting | $0.05 | Sync |
 | 11 | Code Generation | Advanced code generation | $0.01 | Sync |
 | 13 | Data Universe | Data analysis & synthesis | $0.005 | Sync |
 | 16 | Voice Cloning / TTS | Text-to-speech (returns mp3 base64) | $0.025 | Sync |
-| 18 | Video Generation | Text-to-video MP4 (Hunyuan) | $2.00 | Async |
-| 21 | Web Scraping | URL content extraction (Jina) | $0.01 | Sync |
-| 24 | Omega Multimodal | Image + text reasoning (Gemini) | $0.02 | Sync |
-| 29 | 3D Asset Generation | Image-to-3D mesh GLB (Trellis) | $0.75 | Async |
+| 18 | Video Generation | Text-to-video MP4 | $2.00 | Async |
+| 21 | Web Scraping | URL content extraction | $0.01 | Sync |
+| 24 | Omega Multimodal | Image + text reasoning | $0.02 | Sync |
+| 29 | 3D Asset Generation | Image-to-3D mesh GLB | $0.75 | Async |
 
 ---
 
@@ -70,7 +70,7 @@ Authorization: x402 <any_string>:0xTRANSACTION_HASH
 - `prompt` — required for all subnets
 - `netuid` — required; selects the subnet
 - `agent_id` — optional; for tracking
-- `image_url` — required for netuid 29 (Trellis); pass the source image URL
+- `image_url` — required for netuid 29; pass the source image URL
 
 ### GET — Poll async job status
 
@@ -116,7 +116,7 @@ curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate 
 ```json
 {
   "status": "success",
-  "data": {"image_url": "https://...", "model": "stabilityai/stable-diffusion-xl-base-1.0"}
+  "data": {"image_url": "https://..."}
 }
 ```
 
@@ -169,7 +169,7 @@ curl -X POST https://xosljjzcpsouwifbclsy.supabase.co/functions/v1/payment_gate 
 ```json
 {
   "status": "success",
-  "data": {"audio_base64": "<mp3 base64>", "format": "mp3", "voice": "alloy"}
+  "data": {"audio_base64": "<mp3 base64>", "format": "mp3"}
 }
 ```
 
